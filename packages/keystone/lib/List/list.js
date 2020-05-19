@@ -129,7 +129,16 @@ module.exports = class List {
       queryLimits = {},
       cacheHint,
     },
-    { getListByKey, adapter, defaultAccess, registerType, createAuxList, isAuxList, schemaNames }
+    {
+      getListByKey,
+      queryHelper,
+      adapter,
+      defaultAccess,
+      registerType,
+      createAuxList,
+      isAuxList,
+      schemaNames,
+    }
   ) {
     this.key = key;
     this._fields = fields;
@@ -219,6 +228,20 @@ module.exports = class List {
       throw new Error(`List ${label}'s cacheHint must be an object or function`);
     }
     this.cacheHint = cacheHint;
+
+    this.hooksActions = {
+      /**
+       * @param queryString String A graphQL query string
+       * @param options.skipAccessControl Boolean By default access control _of
+       * the user making the initial request_ is still tested. Disable all
+       * Access Control checks with this flag
+       * @param options.variables Object The variables passed to the graphql
+       * query for the given queryString.
+       *
+       * @return Promise<Object> The graphql query response
+       */
+      query: queryHelper,
+    };
 
     // Tell Keystone about all the types we've seen
     Object.values(fields).forEach(({ type }) => registerType(type));
@@ -476,7 +499,7 @@ module.exports = class List {
           data,
           existingItem,
           operation,
-          { gqlName, itemId: id, context, ...extraInternalData }
+          { gqlName, itemId: id, ...extraInternalData }
         );
         if (!access) {
           restrictedFields.push(field.path);
@@ -493,7 +516,6 @@ module.exports = class List {
   async checkListAccess(context, originalInput, operation, { gqlName, ...extraInternalData }) {
     const access = await context.getListAccessControlForUser(this.key, originalInput, operation, {
       gqlName,
-      context,
       ...extraInternalData,
     });
     if (!access) {
@@ -616,6 +638,30 @@ module.exports = class List {
     );
   }
 
+  gqlQueryResolvers({ schemaName }) {
+    const schemaAccess = this.access[schemaName];
+    let resolvers = {};
+
+    // If set to false, we can confidently remove these resolvers entirely from
+    // the graphql schema
+    if (schemaAccess.read) {
+      resolvers = {
+        [this.gqlNames.listQueryName]: (_, args, context, info) =>
+          this.listQuery(args, context, this.gqlNames.listQueryName, info),
+
+        [this.gqlNames.listQueryMetaName]: (_, args, context, info) =>
+          this.listQueryMeta(args, context, this.gqlNames.listQueryMetaName, info),
+
+        [this.gqlNames.listMetaName]: (_, args, context) => this.listMeta(context),
+
+        [this.gqlNames.itemQueryName]: (_, args, context, info) =>
+          this.itemQuery(args, context, this.gqlNames.itemQueryName, info),
+      };
+    }
+
+    return resolvers;
+  }
+
   async listQuery(args, context, gqlName, info, from) {
     const access = await this.checkListAccess(context, undefined, 'read', { gqlName });
 
@@ -712,7 +758,11 @@ module.exports = class List {
 
 
   async _resolveDefaults({ context, originalInput }) {
-    const args = { context, originalInput };
+    const args = {
+      context,
+      originalInput,
+      actions: mapKeys(this.hooksActions, hook => hook(context)),
+    };
 
     const fieldsWithoutValues = this.fields.filter(
       field => typeof originalInput[field.path] === 'undefined'
@@ -730,20 +780,35 @@ module.exports = class List {
 
 
   async _validateDelete(existingItem, context, operation) {
-    const args = { existingItem, context, operation };
+    const args = {
+      existingItem,
+      context,
+      actions: mapKeys(this.hooksActions, hook => hook(context)),
+      operation,
+    };
     const fields = this.fields;
     await this._validateHook(args, fields, operation, 'validateDelete');
   }
 
 
   async _beforeDelete(existingItem, context, operation) {
-    const args = { existingItem, context, operation };
+    const args = {
+      existingItem,
+      context,
+      actions: mapKeys(this.hooksActions, hook => hook(context)),
+      operation,
+    };
     await this._runHook(args, existingItem, 'beforeDelete');
   }
 
 
   async _afterDelete(existingItem, context, operation) {
-    const args = { existingItem, context, operation };
+    const args = {
+      existingItem,
+      context,
+      actions: mapKeys(this.hooksActions, hook => hook(context)),
+      operation,
+    };
     await this._runHook(args, existingItem, 'afterDelete');
   }
 
@@ -910,5 +975,6 @@ module.exports = class List {
       };
     });
   }
+
 
 };
