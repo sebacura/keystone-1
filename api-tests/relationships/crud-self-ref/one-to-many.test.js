@@ -119,29 +119,30 @@ multiAdapterRunners().map(({ runner, adapterName }) =>
 
     [
       [createListsLR, 'Left -> Right'],
-      [createListsRL, 'Right -> Left'],
+      // [createListsRL, 'Right -> Left'],
     ].forEach(([createLists, order]) => {
       describe(`One-to-many relationships - ${order}`, () => {
         function setupKeystone(adapterName) {
           return setupServer({ adapterName, createLists });
         }
 
-        describe('Read', () => {
-          test(
+        describe.only('Read', () => {
+          test.only(
             'one',
             runner(setupKeystone, async ({ keystone }) => {
               await createReadData(keystone);
               await Promise.all(
                 [
                   ['A', 5],
-                  ['B', 5],
-                  ['C', 4],
-                  ['D', 0],
+                  // ['B', 5],
+                  // ['C', 4],
+                  // ['D', 0],
                 ].map(async ([name, count]) => {
-                  const { data } = await graphqlRequest({
+                  const { data, errors } = await graphqlRequest({
                     keystone,
                     query: `{ allUsers(where: { friendOf: { name_contains: "${name}"}}) { id }}`,
                   });
+                  console.log(errors);
                   expect(data.allUsers.length).toEqual(count);
                 })
               );
