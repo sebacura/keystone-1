@@ -18,19 +18,17 @@ const keystone = new Keystone({
 
 ## Config
 
-| Option           | Type       | Default                         | Description                                                                                                                                       |
-| ---------------- | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `adapter`        | `Object`   | Required                        | The database storage adapter. See the [Adapter framework](https://keystonejs.com/keystonejs/keystone/lib/adapters/) docs for more details.        |
-| `adapters`       | `Object`   | `undefined`                     | A list of named database adapters. Use the format `{ name: adapterObject }`.                                                                      |
-| `appVersion`     | `Object`   | See [`appVersion`](#appversion) | Configure the application version and where it is made available.                                                                                 |
-| `cookie`         | `Object`   | See: [`cookie`](#cookie)        | Cookie object used to configure the [express-session middleware](https://github.com/expressjs/session#cookie).                                    |
-| `cookieSecret`   | `String`   | Required in production          | The secret used to sign session ID cookies. Should be long and unguessable.                                                                       |
-| `defaultAccess`  | `Object`   | `undefined`                     | Default list, field, and custom schema access. See the [Access control API](https://www.keystonejs.com/api/access-control) docs for more details. |
-| `defaultAdapter` | `String`   | `undefined`                     | The name of the database adapter to use by default if multiple are provided.                                                                      |
-| `onConnect`      | `Function` | `undefined`                     | Callback that executes once `keystone.connect()` complete. Takes no arguments.                                                                    |
-| `queryLimits`    | `Object`   | `{}`                            | Configures global query limits                                                                                                                    |
-| `sessionStore`   | `Object`   | `undefined`                     | A compatible Express session middleware.                                                                                                          |
-| `schemaNames`    | `Array`    | `['public']`                    |                                                                                                                                                   |
+| Option          | Type       | Default                         | Description                                                                                                                                       |
+| --------------- | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `adapter`       | `Object`   | Required                        | The database storage adapter. See the [Adapter framework](https://keystonejs.com/keystonejs/keystone/lib/adapters/) docs for more details.        |
+| `appVersion`    | `Object`   | See [`appVersion`](#appversion) | Configure the application version and where it is made available.                                                                                 |
+| `cookie`        | `Object`   | See: [`cookie`](#cookie)        | Cookie object used to configure the [express-session middleware](https://github.com/expressjs/session#cookie).                                    |
+| `cookieSecret`  | `String`   | Required in production          | The secret used to sign session ID cookies. Should be long and unguessable.                                                                       |
+| `defaultAccess` | `Object`   | `undefined`                     | Default list, field, and custom schema access. See the [Access control API](https://www.keystonejs.com/api/access-control) docs for more details. |
+| `onConnect`     | `Function` | `undefined`                     | Callback that executes once `keystone.connect()` complete. Takes no arguments.                                                                    |
+| `queryLimits`   | `Object`   | `{}`                            | Configures global query limits                                                                                                                    |
+| `sessionStore`  | `Object`   | `undefined`                     | A compatible Express session middleware.                                                                                                          |
+| `schemaNames`   | `Array`    | `['public']`                    |                                                                                                                                                   |
 
 ### `appVersion`
 
@@ -119,17 +117,17 @@ const keystone = new Keystone({
 
 ## Methods
 
-| Method                | Description                                                                  |
-| --------------------- | ---------------------------------------------------------------------------- |
-| `connect`             | Manually connect to Adapters.                                                |
-| `createAuthStrategy`  | Creates a new authentication middleware instance.                            |
-| `createItems`         | Add items to a `Keystone` list.                                              |
-| `createList`          | Add a list to the `Keystone` schema.                                         |
-| `disconnect`          | Disconnect from all adapters.                                                |
-| `extendGraphQLSchema` | Extend keystones generated schema with custom types, queries, and mutations. |
-| `prepare`             | Manually prepare `Keystone` middlewares.                                     |
-| `createContext`       | Create a `context` object that can be used with `executeGraphQL()`.          |
-| `executeGraphQL`      | Execute a server-side GraphQL operation within the given context.            |
+| Method                | Description                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `connect`             | Manually connect to Adapter.                                                           |
+| `createAuthStrategy`  | Creates a new authentication middleware instance.                                      |
+| `createItems`         | Add items to a `Keystone` list.                                                        |
+| `createList`          | Add a list to the `Keystone` schema.                                                   |
+| `disconnect`          | Disconnect from the adapter.                                                           |
+| `extendGraphQLSchema` | Extend keystones generated schema with custom types, queries, and mutations.           |
+| `prepare`             | Manually prepare `Keystone` middlewares.                                               |
+| `createContext`       | Create a `context` object that can be used with `executeGraphQL()`.                    |
+| `executeGraphQL`      | Execute a server-side GraphQL operation within the given context.                      |
 
 <!--
 
@@ -151,7 +149,7 @@ Please note: We use these internally but provide no support or assurance if used
 
 ### `connect()`
 
-Manually connect Keystone to the adapters. See [Custom Server](https://keystonejs.com/guides/custom-server).
+Manually connect Keystone to the adapter. See [Custom Server](https://keystonejs.com/guides/custom-server).
 
 ```javascript allowCopy=false showLanguage=false
 keystone.connect();
@@ -234,7 +232,7 @@ keystone.createList('Posts', {...});
 
 ### `disconnect()`
 
-Disconnect all adapters.
+Disconnect the adapter.
 
 ### `extendGraphQLSchema(config)`
 
