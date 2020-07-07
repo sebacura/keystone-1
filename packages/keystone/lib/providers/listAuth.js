@@ -110,7 +110,8 @@ class ListAuthProvider {
     return this.list.itemQuery(
       mergeWhereClause({ where: { id: context.authedItem.id } }, access),
       context,
-      this.gqlNames.authenticatedQueryName
+      this.gqlNames.authenticatedQueryName,
+      info
     );
   }
 
